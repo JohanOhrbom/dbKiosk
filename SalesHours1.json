@@ -1,0 +1,63 @@
+[
+  {
+    "$match": {
+      "SaleTimestamp": {
+        "$ne": null
+      }
+    }
+  },
+  {
+    "$addFields": {
+      "SaleTimestampTodate": {
+        "$toDate": "$SaleTimestamp"
+      }
+    }
+  },
+  {
+    "$addFields": {
+      "hour": {
+        "$hour": "$SaleTimestampTodate"
+      },
+      "date": {
+        "$dateToString": {
+          "format": "%Y-%m-%d",
+          "date": "$SaleTimestampTodate"
+        }
+      }
+    }
+  },
+  {
+    "$group": {
+      "_id": {
+        "date": "$date",
+        "hour": "$hour"
+      },
+      "totalSales": {
+        "$sum": {
+          "$multiply": [ "$Quantity", "$Price" ]
+        }
+      },
+      "totalQuantity": {
+        "$sum": "$Quantity"
+      },
+      "iniqueProducts": {
+        "$addToSet": "$ProductName"
+      }
+    }
+  },
+  {
+    "$project": {
+      "_id": 0,
+      "date": "$_id.date",
+      "hour": "$_id.hour",
+      "totalSales": 1,
+      "totalQuantity": 1,
+      "uniqueProducts": 1
+    }
+  },
+  {
+    "$sort": {
+      "date": 1
+    }
+  }
+]
